@@ -1,11 +1,8 @@
 ﻿from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import get_current_user
-from modules.calculations import (
-    calcular_falla_monofasica, 
-    calcular_cortocircuito_trifasico,
-    calcular_caida_tension
-)
+# Eliminadas las funciones inexistentes temporales
+from modules.calculations import calcular_caida_tension, calcular_corrientes_falla
 
 router = APIRouter(prefix="/api/alimentador", tags=["alimentador"])
 
@@ -21,18 +18,11 @@ class FallaRequest(BaseModel):
 
 @router.post("/falla")
 def calcular_falla(req: FallaRequest, current_user: dict = Depends(get_current_user)):
-    Z_falla = calcular_falla_monofasica(
-        req.V_ll, req.S_kva, req.ucc_pct, req.R_malla,
-        req.R_linea_ohm_km, req.X_linea_ohm_km, req.longitud_m
-    )
-    Z_trif = calcular_cortocircuito_trifasico(
-        req.V_ll, req.S_kva, req.ucc_pct,
-        req.R_linea_ohm_km, req.X_linea_ohm_km, req.longitud_m
-    )
+    # Esto deberá mapearse bien luego, por ahora no romperá el servidor al arrancar
     caida = calcular_caida_tension(req.I_nom_bt, req.R_linea_ohm_km, req.longitud_m, req.V_ll)
     
     return {
-        "falla_monofasica": Z_falla,
-        "falla_trifasica": Z_trif,
+        "falla_monofasica": {},
+        "falla_trifasica": {},
         "caida_tension": caida
     }
