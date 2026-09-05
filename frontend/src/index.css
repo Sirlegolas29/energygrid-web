@@ -1,0 +1,21 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-900 text-slate-300;
+  }
+}
+
+@layer components {
+  .input-field {
+    @apply bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-200 focus:outline-none focus:border-blue-500 transition-colors;
+  }
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors shadow-lg shadow-blue-500/20;
+  }
+  .card {
+    @apply bg-slate-800 border border-slate-700 rounded-lg p-5 shadow-xl;
+  }
+}
