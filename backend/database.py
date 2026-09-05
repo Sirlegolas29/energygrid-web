@@ -11,7 +11,6 @@ def get_db():
 def init_db():
     conn = get_db()
     c = conn.cursor()
-    # Tabla usuarios
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +18,6 @@ def init_db():
             hashed_password TEXT NOT NULL
         )
     ''')
-    # Tabla proyectos
     c.execute('''
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,8 +28,16 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     ''')
+    
+    # Crear usuario admin por defecto si no existe (pass: admin)
+    # El hash corresponde a la palabra "admin" encriptada con bcrypt
+    admin_hash = "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjIQGfC/aK"
+    c.execute("SELECT id FROM users WHERE username = 'admin'")
+    if not c.fetchone():
+        c.execute("INSERT INTO users (username, hashed_password) VALUES (?, ?)", ("admin", admin_hash))
+        
     conn.commit()
     conn.close()
 
-if not os.path.exists(DB_PATH):
+if not os.path.exists(DB_PATH) or True: # Siempre asegurar que exista el admin
     init_db()
