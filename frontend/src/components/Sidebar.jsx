@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Activity, Zap, Cable, ShieldAlert, CheckCircle, Battery, FileText } from 'lucide-react';
 import useStore from '../store/useStore';

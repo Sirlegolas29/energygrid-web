@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 
 // Cambia esto a la URL de tu API en produccion (ej. Railway)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
