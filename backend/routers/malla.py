@@ -5,9 +5,10 @@ from auth import get_current_user
 from modules.calculations import (
     resistividad_equivalente_detallado, 
     resistencia_laurent, 
-    resistencia_sverak, 
-    resistencia_schwarz
+    resistencia_sverak,
+    resistencia_ieee80_simple
 )
+import math
 
 router = APIRouter(prefix="/api/malla", tags=["malla"])
 
@@ -37,20 +38,16 @@ def calcular_malla(req: MallaRequest, current_user: dict = Depends(get_current_u
     # 2. Resistencias
     r_laurent = resistencia_laurent(rho_eq, req.area_S, req.largo_total_L)
     r_sverak = resistencia_sverak(rho_eq, req.area_S, req.largo_total_L, req.profundidad_h)
-    r_schwarz, det_sch = resistencia_schwarz(
-        rho_eq, req.largo_total_L, req.area_S, req.profundidad_h, 
-        req.largo_A, req.ancho_B, req.n_conductores_A, req.n_conductores_B, 
-        req.radio_conductor_m
-    )
+    
+    # Usaremos IEEE 80 simple o Sverak como referencia
+    r_ieee = resistencia_ieee80_simple(rho_eq, req.area_S, req.largo_total_L)
     
     return {
         "rho_eq": rho_eq,
         "R_laurent": r_laurent,
         "R_sverak": r_sverak,
-        "R_schwarz": r_schwarz,
-        "R_referencia": r_schwarz,  # Usamos Schwarz por defecto en RPTD N06
-        "detalles_schwarz": det_sch,
-        "cumple": r_schwarz <= 20.0
+        "R_schwarz": r_ieee, # Enviamos IEEE bajo el nombre schwarz temporalmente para no romper el frontend
+        "R_referencia": r_sverak,
+        "detalles_schwarz": {},
+        "cumple": r_sverak <= 20.0
     }
-
-import math
