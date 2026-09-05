@@ -1,7 +1,8 @@
 ﻿from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import get_current_user
-from modules.calculations import calcular_impedancia_trafo, calculo_ecm
+from modules.calculations import calcular_impedancia_transformador, calculo_ecm
+import math
 
 router = APIRouter(prefix="/api/transformador", tags=["transformador"])
 
@@ -14,7 +15,7 @@ class TrafoRequest(BaseModel):
 @router.post("/calcular")
 def calcular_trafo(req: TrafoRequest, current_user: dict = Depends(get_current_user)):
     # Impedancia
-    imp = calcular_impedancia_trafo(req.S_kva, req.V_ll, req.ucc_pct)
+    imp = calcular_impedancia_transformador(req.S_kva, req.V_ll, req.ucc_pct)
     
     # Potencia y corrientes nominales
     I_nom_bt = (req.S_kva * 1000) / (math.sqrt(3) * req.V_ll) if req.V_ll > 0 else 0
@@ -32,5 +33,3 @@ def calcular_trafo(req: TrafoRequest, current_user: dict = Depends(get_current_u
         },
         "ecm": ecm
     }
-
-import math
