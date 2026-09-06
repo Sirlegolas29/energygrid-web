@@ -1,21 +1,65 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-slate-900 text-slate-300;
+    @apply bg-gradient-main text-textMain font-sans min-h-screen;
+    background-attachment: fixed;
+  }
+  
+  h1, h2, h3, .font-display {
+    @apply font-display tracking-wide;
   }
 }
 
 @layer components {
   .input-field {
-    @apply bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-200 focus:outline-none focus:border-blue-500 transition-colors;
+    @apply bg-[#0E0E28] border border-cardBorder rounded-md px-3 py-2 w-full text-textMain focus:outline-none focus:border-primary focus:shadow-glow-primary transition-all duration-300;
   }
+  
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors shadow-lg shadow-blue-500/20;
+    @apply bg-primary hover:bg-primaryDark text-[#000000] font-bold py-2 px-4 rounded-md transition-all duration-300 shadow-[0_0_15px_rgba(0,191,255,0.4)] hover:shadow-glow-primary uppercase tracking-wider;
   }
+  
+  .btn-success {
+    @apply bg-success hover:bg-[#28BB0F] text-[#000000] font-bold py-2 px-4 rounded-md transition-all duration-300 shadow-[0_0_15px_rgba(57,255,20,0.3)] hover:shadow-glow-success uppercase tracking-wider;
+  }
+
   .card {
-    @apply bg-slate-800 border border-slate-700 rounded-lg p-5 shadow-xl;
+    @apply bg-darkCard border border-cardBorder rounded-xl p-6 shadow-2xl relative overflow-hidden;
   }
+  
+  /* Borde brillante sutil en las tarjetas */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00BFFF, transparent);
+    opacity: 0.3;
+  }
+
+  /* Etiquetas de los inputs */
+  label {
+    @apply block text-sm font-semibold text-primary mb-1 tracking-wide;
+  }
+}
+
+/* Efecto para scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #080818;
+}
+::-webkit-scrollbar-thumb {
+  background: #252550;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00BFFF;
 }
