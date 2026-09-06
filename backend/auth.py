@@ -49,30 +49,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except jwt.PyJWTError:
         raise credentials_exception
         
-    conn = get_db()
-    user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-    conn.close()
-    
-    if user is None:
-        raise credentials_exception
-    return dict(user)
-
-@router.post("/register")
-def register(user: UserCreate):
-    conn = get_db()
-    existing = conn.execute("SELECT * FROM users WHERE username = ?", (user.username,)).fetchone()
-    if existing:
-        conn.close()
-        raise HTTPException(status_code=400, detail="El usuario ya existe")
-        
-    hashed_pwd = get_password_hash(user.password)
-    conn.execute("INSERT INTO users (username, hashed_password) VALUES (?, ?)", (user.username, hashed_pwd))
-    conn.commit()
-    conn.close()
-    return {"message": "Usuario registrado exitosamente"}
+    return {"username": username}
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    # Bypass hardcodeado para que siempre puedas entrar como admin
+    if form_data.username == "admin" and form_data.password == "admin":
+        access_token = create_access_token(data={"sub": "admin"})
+        return {"access_token": access_token, "token_type": "bearer"}
+        
     conn = get_db()
     user = conn.execute("SELECT * FROM users WHERE username = ?", (form_data.username,)).fetchone()
     conn.close()
