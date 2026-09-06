@@ -1,7 +1,11 @@
 ﻿import axios from 'axios';
 
-// Obtenemos la URL de la API y quitamos cualquier barra final (/) para evitar problemas de CORS por redirecciones (doble slash)
-let rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Detectar automaticamente si estamos en 127.0.0.1 o localhost
+const defaultHost = (typeof window !== 'undefined' && window.location.hostname === '127.0.0.1') 
+  ? 'http://127.0.0.1:8000' 
+  : 'http://localhost:8000';
+
+let rawUrl = import.meta.env.VITE_API_URL || defaultHost;
 const API_URL = rawUrl.replace(/\/+$/, '');
 
 const client = axios.create({
