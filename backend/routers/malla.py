@@ -6,6 +6,7 @@ from modules.calculations import (
     resistividad_equivalente_detallado, 
     resistencia_laurent, 
     resistencia_sverak,
+    resistencia_schwarz_detallado,
     resistencia_ieee80_simple
 )
 import math
@@ -17,38 +18,54 @@ class Stratum(BaseModel):
     h: Optional[float] = None
 
 class MallaRequest(BaseModel):
-    strata: List[Stratum]
-    largo_A: float
-    ancho_B: float
-    n_conductores_A: int
-    n_conductores_B: int
-    profundidad_h: float
-    radio_conductor_m: float
-    largo_total_L: float
-    area_S: float
+    rho1: float = 37.0
+    h1: float = 0.44
+    rho2: float = 185.0
+    h2: float = 2.20
+    rho3: float = 24.0
+    largo_A: float = 5.0
+    ancho_B: float = 4.0
+    profundidad_h: float = 0.6
+    n_conductores_A: int = 5
+    n_conductores_B: int = 6
+    radio_conductor_m: float = 0.0032
+    L_R_barras: int = 0
 
 @router.post("/calcular")
 def calcular_malla(req: MallaRequest, current_user: dict = Depends(get_current_user)):
-    # 1. Resistividad Equivalente (Burgsdorf-Yakobs)
-    b_radio = math.sqrt(req.area_S / math.pi) if req.area_S > 0 else 0
-    strata_dicts = [{"rho": s.rho, "h": s.h if s.h else float('inf')} for s in req.strata]
+    # Estratos acumulados
+    h1_cum = req.h1
+    h2_cum = req.h1 + req.h2
+    strata_list = [
+        {"rho": req.rho1, "h": h1_cum},
+        {"rho": req.rho2, "h": h2_cum},
+        {"rho": req.rho3, "h": None}
+    ]
     
-    rho_eq, det = resistividad_equivalente_detallado(strata_dicts, req.area_S, b_radio)
+    # Geometría
+    S_area = req.largo_A * req.ancho_B
+    L_total = (req.n_conductores_A * req.largo_A) + (req.n_conductores_B * req.ancho_B)
+    
+    # 1. Resistividad Equivalente
+    rho_eq, detalles = resistividad_equivalente_detallado(strata_list, S_area, req.profundidad_h)
     
     # 2. Resistencias
-    r_laurent = resistencia_laurent(rho_eq, req.area_S, req.largo_total_L)
-    r_sverak = resistencia_sverak(rho_eq, req.area_S, req.largo_total_L, req.profundidad_h)
+    r_laurent = resistencia_laurent(rho_eq, S_area, L_total)
+    r_sverak = resistencia_sverak(rho_eq, S_area, L_total, req.profundidad_h)
+    r_schwarz, d_sch = resistencia_schwarz_detallado(
+        rho_eq, S_area, L_total, req.largo_A, req.ancho_B, req.radio_conductor_m, req.profundidad_h
+    )
+    r_ieee = resistencia_ieee80_simple(rho_eq, S_area, L_total)
     
-    # Usaremos IEEE 80 simple o Sverak como referencia
-    r_ieee = resistencia_ieee80_simple(rho_eq, req.area_S, req.largo_total_L)
-    
-    # Convertir a tipos estándar de Python para evitar errores de serialización JSON con NumPy
     return {
         "rho_eq": float(rho_eq),
         "R_laurent": float(r_laurent),
         "R_sverak": float(r_sverak),
-        "R_schwarz": float(r_ieee), # Enviamos IEEE bajo el nombre schwarz temporalmente para no romper el frontend
-        "R_referencia": float(r_sverak),
-        "detalles_schwarz": {},
-        "cumple": bool(r_sverak <= 20.0)
+        "R_schwarz": float(r_schwarz),
+        "R_ieee": float(r_ieee),
+        "R_referencia": float(r_schwarz),
+        "S_area": float(S_area),
+        "L_total": float(L_total),
+        "detalles": detalles if isinstance(detalles, dict) else {},
+        "cumple": bool(r_schwarz <= 20.0)
     }
