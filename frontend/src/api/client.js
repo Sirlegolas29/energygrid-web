@@ -1,7 +1,8 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 
-// Cambia esto a la URL de tu API en produccion (ej. Railway)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Obtenemos la URL de la API y quitamos cualquier barra final (/) para evitar problemas de CORS por redirecciones (doble slash)
+let rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = rawUrl.replace(/\/+$/, '');
 
 const client = axios.create({
   baseURL: API_URL,
