@@ -1,7 +1,7 @@
 ﻿from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from auth import get_current_user
-from modules.calculations import calcular_banco_capacitores
+from modules.calculations import calcular_potencia_reactiva
 
 router = APIRouter(prefix="/api/capacitores", tags=["capacitores"])
 
@@ -12,5 +12,5 @@ class CapRequest(BaseModel):
 
 @router.post("/calcular")
 def calcular_cap(req: CapRequest, current_user: dict = Depends(get_current_user)):
-    res = calcular_banco_capacitores(req.potencia_kw, req.fp_actual, req.fp_objetivo)
+    res = calcular_potencia_reactiva(req.potencia_kw, req.fp_actual, req.fp_objetivo)
     return res
