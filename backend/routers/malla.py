@@ -42,12 +42,13 @@ def calcular_malla(req: MallaRequest, current_user: dict = Depends(get_current_u
     # Usaremos IEEE 80 simple o Sverak como referencia
     r_ieee = resistencia_ieee80_simple(rho_eq, req.area_S, req.largo_total_L)
     
+    # Convertir a tipos estándar de Python para evitar errores de serialización JSON con NumPy
     return {
-        "rho_eq": rho_eq,
-        "R_laurent": r_laurent,
-        "R_sverak": r_sverak,
-        "R_schwarz": r_ieee, # Enviamos IEEE bajo el nombre schwarz temporalmente para no romper el frontend
-        "R_referencia": r_sverak,
+        "rho_eq": float(rho_eq),
+        "R_laurent": float(r_laurent),
+        "R_sverak": float(r_sverak),
+        "R_schwarz": float(r_ieee), # Enviamos IEEE bajo el nombre schwarz temporalmente para no romper el frontend
+        "R_referencia": float(r_sverak),
         "detalles_schwarz": {},
-        "cumple": r_sverak <= 20.0
+        "cumple": bool(r_sverak <= 20.0)
     }
