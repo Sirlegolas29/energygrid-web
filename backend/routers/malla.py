@@ -13,10 +13,6 @@ import math
 
 router = APIRouter(prefix="/api/malla", tags=["malla"])
 
-class Stratum(BaseModel):
-    rho: float
-    h: Optional[float] = None
-
 class MallaRequest(BaseModel):
     rho1: float = 37.0
     h1: float = 0.44
@@ -33,7 +29,6 @@ class MallaRequest(BaseModel):
 
 @router.post("/calcular")
 def calcular_malla(req: MallaRequest, current_user: dict = Depends(get_current_user)):
-    # Estratos acumulados
     h1_cum = req.h1
     h2_cum = req.h1 + req.h2
     strata_list = [
@@ -42,20 +37,20 @@ def calcular_malla(req: MallaRequest, current_user: dict = Depends(get_current_u
         {"rho": req.rho3, "h": None}
     ]
     
-    # Geometría
     S_area = req.largo_A * req.ancho_B
     L_total = (req.n_conductores_A * req.largo_A) + (req.n_conductores_B * req.ancho_B)
     
-    # 1. Resistividad Equivalente
     rho_eq, detalles = resistividad_equivalente_detallado(strata_list, S_area, req.profundidad_h)
     
-    # 2. Resistencias
     r_laurent = resistencia_laurent(rho_eq, S_area, L_total)
     r_sverak = resistencia_sverak(rho_eq, S_area, L_total, req.profundidad_h)
     r_schwarz, d_sch = resistencia_schwarz_detallado(
         rho_eq, S_area, L_total, req.largo_A, req.ancho_B, req.radio_conductor_m, req.profundidad_h
     )
     r_ieee = resistencia_ieee80_simple(rho_eq, S_area, L_total)
+    
+    # Sanitizar detalles para que sea 100% JSON compliant (sin 'inf')
+    denom_str = detalles.get("denom_str", "") if isinstance(detalles, dict) else ""
     
     return {
         "rho_eq": float(rho_eq),
@@ -66,6 +61,6 @@ def calcular_malla(req: MallaRequest, current_user: dict = Depends(get_current_u
         "R_referencia": float(r_schwarz),
         "S_area": float(S_area),
         "L_total": float(L_total),
-        "detalles": detalles if isinstance(detalles, dict) else {},
+        "detalles": {"denom_str": denom_str},
         "cumple": bool(r_schwarz <= 20.0)
     }
