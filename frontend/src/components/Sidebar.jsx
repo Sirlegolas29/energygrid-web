@@ -1,10 +1,11 @@
 ﻿import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Activity, Zap, Cable, ShieldAlert, CheckCircle, Battery, FileText, LogOut } from 'lucide-react';
+import { Activity, Zap, Cable, ShieldAlert, CheckCircle, Battery, FileText, LogOut, UserCheck } from 'lucide-react';
 import useStore from '../store/useStore';
 
 export default function Sidebar() {
-  const setToken = useStore(state => state.setToken);
+  const logout = useStore(state => state.logout);
+  const user = useStore(state => state.user);
 
   const links = [
     { to: "/malla", icon: <Activity size={18} />, text: "1. Malla a Tierra", color: "text-[#00BFFF]" },
@@ -15,6 +16,10 @@ export default function Sidebar() {
     { to: "/capacitores", icon: <Battery size={18} />, text: "6. Capacitores", color: "text-[#00BFFF]" },
     { to: "/resumen", icon: <FileText size={18} />, text: "7. Resumen y Reporte", color: "text-[#40D4FF]" },
   ];
+
+  const displayName = user?.full_name || user?.username || 'Usuario';
+  const role = user?.role || 'Ingeniero';
+  const initial = displayName.charAt(0).toUpperCase();
 
   return (
     <div className="w-64 h-screen bg-[#0E0E28] border-r border-[#252550] flex flex-col justify-between shadow-2xl z-20">
@@ -56,10 +61,27 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      {/* Footer / Logout */}
-      <div className="p-4 border-t border-[#252550]">
+      {/* Perfil del Usuario y Logout */}
+      <div className="p-4 border-t border-[#252550] space-y-3 bg-[#080818]/60">
+        <div className="flex items-center space-x-3 p-2 rounded-lg bg-[#141430] border border-[#252550]">
+          <div className="w-9 h-9 rounded-full bg-[#00BFFF]/20 border border-[#00BFFF]/50 flex items-center justify-center font-bold text-sm text-[#00BFFF] font-display shadow-sm">
+            {initial}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-white truncate leading-tight">
+              {displayName}
+            </p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#39FF14]"></span>
+              <p className="text-[10px] text-[#00BFFF] font-mono truncate">
+                {role}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <button 
-          onClick={() => setToken(null)}
+          onClick={logout}
           className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg text-xs font-semibold text-[#FF3347] bg-[#FF3347]/10 border border-[#FF3347]/30 hover:bg-[#FF3347] hover:text-white transition-all duration-200 shadow-sm"
         >
           <LogOut size={14} />

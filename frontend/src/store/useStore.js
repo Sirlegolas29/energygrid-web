@@ -1,6 +1,40 @@
 ﻿import { create } from 'zustand';
 
+// Parsear usuario guardado si existe
+let initialUser = null;
+try {
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) initialUser = JSON.parse(savedUser);
+} catch (e) {
+  initialUser = null;
+}
+
 const useStore = create((set) => ({
+  // Usuario y Sesión
+  token: localStorage.getItem('token') || null,
+  user: initialUser,
+  setToken: (token, user = null) => {
+    if (token) {
+      localStorage.setItem('token', token);
+      if (user) localStorage.setItem('user', JSON.stringify(user));
+      set({ token, user: user || null });
+    } else {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      set({ token: null, user: null });
+    }
+  },
+  setUser: (user) => {
+    if (user) localStorage.setItem('user', JSON.stringify(user));
+    else localStorage.removeItem('user');
+    set({ user });
+  },
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    set({ token: null, user: null });
+  },
+
   // Tab 1: Malla
   mallaInputs: {
     rho1: 37.0,
@@ -48,15 +82,7 @@ const useStore = create((set) => ({
   capInputs: { potencia_kw: 150, fp_actual: 0.75, fp_objetivo: 0.95, V_servicio: 380 },
   capResults: null,
   setCapInputs: (inputs) => set({ capInputs: inputs }),
-  setCapResults: (res) => set({ capResults: res }),
-
-  // Auth
-  token: localStorage.getItem('token') || null,
-  setToken: (token) => {
-    if(token) localStorage.setItem('token', token);
-    else localStorage.removeItem('token');
-    set({ token });
-  }
+  setCapResults: (res) => set({ capResults: res })
 }));
 
 export default useStore;

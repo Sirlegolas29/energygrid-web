@@ -1,6 +1,7 @@
-﻿import React from 'react';
+﻿import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import useStore from './store/useStore';
+import client from './api/client';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 import MallaPage from './pages/MallaPage';
@@ -26,6 +27,23 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   const token = useStore(state => state.token);
+  const setUser = useStore(state => state.setUser);
+  const logout = useStore(state => state.logout);
+
+  useEffect(() => {
+    if (token) {
+      client.get('/api/auth/me')
+        .then(res => {
+          if (res.data) setUser(res.data);
+        })
+        .catch(err => {
+          // Si el token es inválido o expiró
+          if (err.response?.status === 401) {
+            logout();
+          }
+        });
+    }
+  }, [token]);
 
   return (
     <Router>
